@@ -9,6 +9,8 @@ import OSS_group11.ConvoPersona.dtos.MbtiPredictionOutputDTO;
 import OSS_group11.ConvoPersona.repositories.ChatRepository;
 import OSS_group11.ConvoPersona.repositories.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,8 @@ public class ChatService {
     private final ChatGptService chatGptService;
     private final ChatRepository chatRepository;
     private final MessageRepository messageRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     @Autowired
     public ChatService(FastApiService fastApiService, ChatGptService chatGptService,
@@ -102,7 +106,11 @@ public class ChatService {
         System.out.println("mbti = " + mbtiPredictionOutputDTO.getMbti());
 
         //ChatGPT API 호출 -> mbti + userPrompt requestBody에 담아서 요청 보내서 gptPrompt 받아온다.
-        String gptPrompt = chatGptService.callChatGPTAPI(mbtiPredictionOutputDTO.getMbti(), userPrompt);
+        //gptResponse는 Json문자열임, gpt의 답변말고도 여러 정보 포함되어있음.
+        // Json 문자열을 처리해서, gpt 답변(gptPrompt) 추출
+        String gptResponse = chatGptService.callChatGPTAPI(mbtiPredictionOutputDTO.getMbti(), userPrompt);
+        JsonNode gptPromptJson = objectMapper.readTree(gptResponse);
+        String gptPrompt = gptPromptJson.get("choices").get(0).get("message").get("content").asText();
         System.out.println("gptPrompt = " + gptPrompt);
 
         //gptMessage도 message테이블에 저장하기

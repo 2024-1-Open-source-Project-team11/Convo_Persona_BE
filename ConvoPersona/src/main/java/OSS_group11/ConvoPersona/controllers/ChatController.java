@@ -5,7 +5,6 @@ import OSS_group11.ConvoPersona.dtos.AddChatResDTO;
 import OSS_group11.ConvoPersona.dtos.GetChatLogDTO;
 import OSS_group11.ConvoPersona.services.ChatService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +15,6 @@ import org.springframework.web.bind.annotation.*;
 public class ChatController {
 
     private final ChatService chatService;
-
-    ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     public ChatController(ChatService chatService) {
@@ -71,62 +68,7 @@ public class ChatController {
         if (addChatResDTO == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("chatId 존재 X");
         }
-        System.out.println("ChatController.postUserPrompt");
-        System.out.println(objectMapper.writeValueAsString(addChatResDTO));
         return ResponseEntity.ok(addChatResDTO);
     }
 
 }
-
-/*
-gptPrompt = {
-  "id": "chatcmpl-9LwiEKFItqJAwJtNHOwX01X1vhhrR",
-  "object": "chat.completion",
-  "created": 1715017606,
-  "model": "gpt-3.5-turbo-0125",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "안녕! ESTP 유형인 당신에게 조언을 드릴게. 감정을 표현하는 것이 쉽지 않을 수 있지만, 이를 효과적으로 전달하기 위해서 몇 가지 팁을 준비했어. \n\n1. 직접적이고 솔직하게 표현하기: 당신은 직설적이고 현실적인 성향이 강할 거라고 생각해. 그러니 감정을 담담하고 직접적으로 표현할 필요가 있어.\n\n2. 구체적인 예시와 사례 제시하기: 감정을 설명할 때 구체적인 상황이나 사례를 들어 예시를 들어주면 상대방이 이해하기 쉬울 거야.\n\n3. 진심을 담아 표현하기: 진심이 담긴 어조와 몸짓으로 감정을 전달하면 상대방이 더 잘 이해할 수 있을 거야.\n\n4. 상대방의 시선에 서서 생각해보기: 상대방이 받아들일 수 있는 방식으로 감정을 전달하는 것이 중요해. 그래서 상대방의 입장에서도 고려하며 이야기하는 것이 좋겠지!\n\n이런 팁을 참고해보면 여자친구와의 소통이 더 원할해질 거야. 행복한 관계를 위해 자유롭게 감정을 표현해보는 것이 중요하다는 걸 잊지마세요!"
-      },
-      "logprobs": null,
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 78,
-    "completion_tokens": 452,
-    "total_tokens": 530
-  },
-  "system_fingerprint": "fp_3b956da36b"
-}
- */
-
-/*
-{
-   "id": "chatcmpl-9LwiEKFItqJAwJtNHOwX01X1vhhrR",
-   "object": "chat.completion",
-   "created": 1715017606,
-   "model": "gpt-3.5-turbo-0125",
-   "choices": [
-     {
-       "index": 0,
-       "message": {
-         "role": "assistant",
-         "content": "안녕! ESTP 유형인 당신에게 조언을 드릴게. 감정을 표현하는 것이 쉽지 않을 수 있지만, 이를 효과적으로 전달하기 위해서 몇 가지 팁을 준비했어. \n\n1. 직접적이고 솔직하게 표현하기: 당신은 직설적이고 현실적인 성향이 강할 거라고 생각해. 그러니 감정을 담담하고 직접적으로 표현할 필요가 있어.\n\n2. 구체적인 예시와 사례 제시하기: 감정을 설명할 때 구체적인 상황이나 사례를 들어 예시를 들어주면 상대방이 이해하기 쉬울 거야.\n\n3. 진심을 담아 표현하기: 진심이 담긴 어조와 몸짓으로 감정을 전달하면 상대방이 더 잘 이해할 수 있을 거야.\n\n4. 상대방의 시선에 서서 생각해보기: 상대방이 받아들일 수 있는 방식으로 감정을 전달하는 것이 중요해. 그래서 상대방의 입장에서도 고려하며 이야기하는 것이 좋겠지!\n\n이런 팁을 참고해보면 여자친구와의 소통이 더 원할해질 거야. 행복한 관계를 위해 자유롭게 감정을 표현해보는 것이 중요하다는 걸 잊지마세요!"
-       },
-       "logprobs": null,
-       "finish_reason": "stop"
-     }
-   ],
-   "usage": {
-     "prompt_tokens": 78,
-     "completion_tokens": 452,
-     "total_tokens": 530
-   },
-   "system_fingerprint": "fp_3b956da36b"
- }
-
- */
