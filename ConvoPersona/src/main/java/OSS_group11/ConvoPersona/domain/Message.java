@@ -1,14 +1,28 @@
 package OSS_group11.ConvoPersona.domain;
 
+import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Message {
+@NoArgsConstructor
+@Entity
+@Table(name = "message")
+public class Message extends BaseTimeEntity {
+    @Id
     private int id;
+
+    @Enumerated(EnumType.STRING)
     private Sender sender;
     private String content;
+
+    @ManyToOne
+    @JoinColumn(name = "chat_id")
+    @Nullable
+    private Chat chat;
 
     public Message(int id, Sender sender, String content) {
         this.id = id;
