@@ -24,12 +24,12 @@ public class FastApiService {
 
     @Autowired
     public FastApiService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl(serverUrl).build();
+        this.webClient = webClientBuilder.baseUrl("https://dcd0-175-123-220-142.ngrok-free.app").build();
     }
 
 
     public MbtiPredictionOutputDTO predictMbti(List<String> userPromptList) throws JsonProcessingException {
-
+        System.out.println("serverUrl = " + serverUrl);
 
         // FastAPI 서버에 요청을 보내고 mbti 문자열을 받아옴
         return webClient.post()
