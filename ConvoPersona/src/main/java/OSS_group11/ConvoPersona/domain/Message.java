@@ -13,16 +13,21 @@ import lombok.Setter;
 @Table(name = "message")
 public class Message extends BaseTimeEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "message_id")
     private int id;
 
     @Enumerated(EnumType.STRING)
     private Sender sender;
     private String content;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_id")
     @Nullable
     private Chat chat;
+
+    @OneToOne(mappedBy = "gptMessage", fetch = FetchType.LAZY)
+    private Feedback feedback;
 
     public Message(int id, Sender sender, String content) {
         this.id = id;
