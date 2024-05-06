@@ -1,6 +1,7 @@
 package OSS_group11.ConvoPersona.controllers;
 
 import OSS_group11.ConvoPersona.dtos.SignInReqDTO;
+import OSS_group11.ConvoPersona.dtos.SignInResDTO;
 import OSS_group11.ConvoPersona.services.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,11 +27,14 @@ public class MemberController {
      * @return
      */
     @PostMapping("/user")
-    public ResponseEntity<String> signIn(@RequestBody SignInReqDTO signInReqDTO) {
+    public ResponseEntity<?> signIn(@RequestBody SignInReqDTO signInReqDTO) {
         Long memberId = memberService.login(signInReqDTO.getName(), signInReqDTO.getPassword());
+
+        //회원이 DB에 없으면, memberId에 에러메시지 문자열 걍 넣어버림
         if (memberId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패: 잘못된 사용자 이름 또는 비밀번호입니다.");
         }
-        return ResponseEntity.ok(memberId.toString());
+        SignInResDTO signInResDTO = new SignInResDTO(memberId.toString());
+        return ResponseEntity.ok(signInResDTO);
     }
 }
