@@ -1,7 +1,7 @@
 package OSS_group11.ConvoPersona.domain;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,20 +13,29 @@ import lombok.Setter;
 @Table(name = "message")
 public class Message extends BaseTimeEntity {
     @Id
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "message_id")
+    private Long id;
 
     @Enumerated(EnumType.STRING)
     private Sender sender;
+    
+    @Column(columnDefinition = "TEXT")
     private String content;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_id")
-    @Nullable
     private Chat chat;
 
-    public Message(int id, Sender sender, String content) {
+    @OneToOne(mappedBy = "gptMessage", fetch = FetchType.LAZY)
+    private Feedback feedback;
+
+    @Builder
+    public Message(Long id, Sender sender, String content, Chat chat, Feedback feedback) {
         this.id = id;
         this.sender = sender;
         this.content = content;
+        this.chat = chat;
+        this.feedback = feedback;
     }
 }
