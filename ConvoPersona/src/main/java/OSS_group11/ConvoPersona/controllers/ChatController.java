@@ -60,6 +60,7 @@ public class ChatController {
         // Demo 이후에는 POST "/chat/{chatId}"으로 수정해야함
         // -> 일단 chatId는 0으로 지정해줄 것(Member당 Chat이 1개인 상황이기 때문)
         // chatId를 가지는 Chat이 있는지 확인한다. 없으면 Exception 발생시키기.
+        
         Long chatId = 1L;
 
         //Message userMessage = new Message(1L, Sender.USER, addChatReqDTO.getContent());
@@ -72,6 +73,12 @@ public class ChatController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("chatId 존재 X");
         }
         return ResponseEntity.ok(addChatResDTO);
+    }
+
+    @DeleteMapping("/chat")
+    @CrossOrigin(origins = "https://convo-persona.netlify.app")
+    public void deleteChatLog(@RequestHeader("Authorization") Long memberId) {
+        chatService.deleteAllMessage(memberId);
     }
 
 }

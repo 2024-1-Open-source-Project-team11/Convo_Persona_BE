@@ -1,12 +1,14 @@
 package OSS_group11.ConvoPersona.services;
 
 import OSS_group11.ConvoPersona.domain.Chat;
+import OSS_group11.ConvoPersona.domain.Member;
 import OSS_group11.ConvoPersona.domain.Message;
 import OSS_group11.ConvoPersona.domain.Sender;
 import OSS_group11.ConvoPersona.dtos.AddChatResDTO;
 import OSS_group11.ConvoPersona.dtos.GetChatLogDTO;
 import OSS_group11.ConvoPersona.dtos.MbtiPredictionOutputDTO;
 import OSS_group11.ConvoPersona.repositories.ChatRepository;
+import OSS_group11.ConvoPersona.repositories.MemberRepository;
 import OSS_group11.ConvoPersona.repositories.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ChatService {
@@ -24,17 +27,20 @@ public class ChatService {
     private final ChatGptService chatGptService;
     private final ChatRepository chatRepository;
     private final MessageRepository messageRepository;
+    private final MemberRepository memberRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
 
     @Autowired
     public ChatService(FastApiService fastApiService, ChatGptService chatGptService,
-                       ChatRepository chatRepository, MessageRepository messageRepository) {
+                       ChatRepository chatRepository, MessageRepository messageRepository,
+                       MemberRepository memberRepository) {
         this.fastApiService = fastApiService;
         this.chatGptService = chatGptService;
         this.chatRepository = chatRepository;
         this.messageRepository = messageRepository;
+        this.memberRepository = memberRepository;
     }
+
 
     /***
      * 사용자 id로 chatList 불러오기
@@ -138,4 +144,14 @@ public class ChatService {
     }
 
 
+    public void deleteAllMessage(Long memberId) {
+        List<Chat> chatList = chatRepository.findAllByMemberId(memberId);
+        Optional<Member> member = memberRepository.findById(memberId);
+        Long chatId = chatList.get(0).getChatId();
+        chatRepository.deleteById(chatId);      //chat을 삭제하면 해당 chat에 속한 메시지들도 모두 삭제된다.
+
+        chatRepository.save(Chat.builder()
+                .member(member.get())
+                .build());
+    }
 }

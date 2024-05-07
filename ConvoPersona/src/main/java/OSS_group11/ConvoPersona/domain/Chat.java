@@ -1,6 +1,7 @@
 package OSS_group11.ConvoPersona.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,4 +26,11 @@ public class Chat extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages;
+
+    @Builder
+    public Chat(Long chatId, Member member, List<Message> messages) {
+        this.chatId = chatId;
+        this.member = member;
+        this.messages = messages;
+    }
 }
