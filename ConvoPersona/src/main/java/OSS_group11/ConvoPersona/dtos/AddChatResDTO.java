@@ -16,5 +16,4 @@ public class AddChatResDTO {
         this.userMessage = userMessage;
         this.gptMessage = gptMessage;
     }
-    
 }

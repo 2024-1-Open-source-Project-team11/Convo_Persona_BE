@@ -9,4 +9,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AddChatReqDTO {
     private String content;
+
+    public AddChatReqDTO(String content) {
+        this.content = content;
+    }
 }

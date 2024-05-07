@@ -24,7 +24,7 @@ public class FastApiService {
 
     @Autowired
     public FastApiService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://b695-175-123-220-142.ngrok-free.app").build();
+        this.webClient = webClientBuilder.baseUrl("https://55b6-219-255-207-61.ngrok-free.app").build();
     }
 
 

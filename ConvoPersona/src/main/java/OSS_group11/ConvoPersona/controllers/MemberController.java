@@ -6,10 +6,7 @@ import OSS_group11.ConvoPersona.services.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -26,7 +23,8 @@ public class MemberController {
      * Member테이블 조회, (name, password) 존재하면 해당 userId 반환
      * @return
      */
-    @PostMapping("/user")
+    @PostMapping("/user/sign-in")
+    @CrossOrigin(origins = "https://convo-persona.netlify.app")
     public ResponseEntity<?> signIn(@RequestBody SignInReqDTO signInReqDTO) {
         Long memberId = memberService.login(signInReqDTO.getName(), signInReqDTO.getPassword());
 

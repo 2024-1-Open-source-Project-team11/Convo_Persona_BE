@@ -27,7 +27,7 @@ public class ChatGptService {
                 {
                     "model": "gpt-3.5-turbo",
                     "messages": [
-                        {"role": "system", "content": "사용자의 MBTI는 %s이야. 이에 맞게 너는 맞춤 상담사가 되어줘야해"},
+                        {"role": "system", "content": "사용자의 MBTI는 %s입니다. 사용자의 MBTI를 고려하여 맞춤 고민 상담을 진행해주세요. 답변할 때마다, 사용자의 MBTI는 언급하지말고 답변하세요. 답변할 때마다, 반말로 답변하세요."},
                         {"role": "user", "content": "%s"}
                     ]
                 }

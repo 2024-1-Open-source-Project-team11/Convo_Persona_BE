@@ -8,9 +8,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class SignInResDTO {
-    private String memberId;
+    private String id;
 
-    public SignInResDTO(String memberId) {
-        this.memberId = memberId;
+    public SignInResDTO(String id) {
+        this.id = id;
     }
 }

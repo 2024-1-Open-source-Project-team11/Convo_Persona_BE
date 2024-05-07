@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/vi")
+@RequestMapping("/api/v1")
 public class ChatController {
 
     private final ChatService chatService;
@@ -29,8 +29,10 @@ public class ChatController {
      * @return GetChatLogDTO -> (chatId, messages)
      */
     @GetMapping("/chat")
+    @CrossOrigin(origins = "https://convo-persona.netlify.app")
     public GetChatLogDTO getChatLog(@RequestHeader("Authorization") Long memberId) {
         GetChatLogDTO getChatLogDTO = chatService.getChats(memberId);
+        System.out.println("채팅 이력 불러오기 GetMapping 성공");
         return getChatLogDTO;
         //{chatId, List<Message> messageList} 반환
         // message객체(id, sender, content) 리스트로 응답하기(시간 순대로 저장되어 있을거임)
@@ -45,6 +47,7 @@ public class ChatController {
      * @return
      */
     @PostMapping("/chat")
+    @CrossOrigin(origins = "https://convo-persona.netlify.app")
     public ResponseEntity<?> postUserPrompt(@RequestHeader("Authorization") Long memberId, @RequestBody AddChatReqDTO addChatReqDTO) throws JsonProcessingException {
         System.out.println("memberId = " + memberId);
         System.out.println("userPrompt = " + addChatReqDTO.getContent());
