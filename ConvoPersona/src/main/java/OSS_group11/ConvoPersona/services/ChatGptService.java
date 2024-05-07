@@ -33,8 +33,8 @@ public class ChatGptService {
                 }
                 """.formatted(mbti, userPrompt);
 
-        System.out.println("requestBody = \n" + requestBody);
-        System.out.println();
+//        System.out.println("requestBody = \n" + requestBody);
+//        System.out.println();
 
         return webClient.post()
                 .header("Authorization", "Bearer " + apiKey)

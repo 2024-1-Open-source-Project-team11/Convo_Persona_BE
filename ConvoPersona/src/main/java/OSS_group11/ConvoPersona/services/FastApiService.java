@@ -29,7 +29,7 @@ public class FastApiService {
 
 
     public MbtiPredictionOutputDTO predictMbti(List<String> userPromptList) throws JsonProcessingException {
-        System.out.println("serverUrl = " + serverUrl);
+//        System.out.println("serverUrl = " + serverUrl);
 
         // FastAPI 서버에 요청을 보내고 mbti 문자열을 받아옴
         return webClient.post()

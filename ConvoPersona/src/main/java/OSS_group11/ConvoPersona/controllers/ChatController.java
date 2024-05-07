@@ -31,10 +31,10 @@ public class ChatController {
     @GetMapping("/chat")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
     public ResponseEntity<GetChatLogDTO> getChatLog(@RequestHeader("Authorization") Long memberId) {
-        System.out.println("--------------------------");
-        System.out.println("memberId = " + memberId);
+//        System.out.println("--------------------------");
+//        System.out.println("memberId = " + memberId);
         GetChatLogDTO getChatLogDTO = chatService.getChats(memberId);
-        System.out.println("채팅 이력 불러오기 GetMapping 성공");
+//        System.out.println("채팅 이력 불러오기 GetMapping 성공");
         return ResponseEntity.ok(getChatLogDTO);
         //{chatId, List<Message> messageList} 반환
         // message객체(id, sender, content) 리스트로 응답하기(시간 순대로 저장되어 있을거임)
@@ -51,8 +51,8 @@ public class ChatController {
     @PostMapping("/chat")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
     public ResponseEntity<?> postUserPrompt(@RequestHeader("Authorization") Long memberId, @RequestBody AddChatReqDTO addChatReqDTO) throws JsonProcessingException {
-        System.out.println("memberId = " + memberId);
-        System.out.println("userPrompt = " + addChatReqDTO.getContent());
+//        System.out.println("memberId = " + memberId);
+//        System.out.println("userPrompt = " + addChatReqDTO.getContent());
 
 
         // 사용자가 입력한 userPrompt (=addChatReqDTO.getContent()) 이용

@@ -50,7 +50,7 @@ public class ChatService {
      * @return
      */
     public GetChatLogDTO getChats(Long memberId) {
-        System.out.println("ChatService.getChats() 진입 성공");
+//        System.out.println("ChatService.getChats() 진입 성공");
         Optional<Chat> chat = chatRepository.findByMemberId(memberId);
         Optional<Member> member = memberRepository.findById(memberId);
         List<Message> tempMessageList = new ArrayList<>();
@@ -74,9 +74,9 @@ public class ChatService {
         List<Message> messageList = chat.get().getMessages();
         tempMessageList.addAll(messageList);
         Collections.reverse(tempMessageList);
-        for (Message message : tempMessageList) {
-            System.out.println("message = " + message.getContent());
-        }
+//        for (Message message : tempMessageList) {
+//            System.out.println("message = " + message.getContent());
+//        }
         Long chatId = chat.get().getChatId();
         return new GetChatLogDTO(chatId, tempMessageList);
     }
@@ -108,7 +108,7 @@ public class ChatService {
             gptMessage DB에 저장해야한다. (completed)
          */
 
-        System.out.println("chatId = " + chatId);
+//        System.out.println("chatId = " + chatId);
 
         //사용자가 입력한 새 prompt 추가 저장하기.
         Chat chat = chatRepository.findById(chatId).orElse(null);
@@ -141,7 +141,7 @@ public class ChatService {
         // FastApiService를 이용해서, userPrompt로 MBTI를 예측한 결과를 받아온다.
         MbtiPredictionOutputDTO mbtiPredictionOutputDTO = fastApiService.predictMbti(userPromptLog);
 
-        System.out.println("mbti = " + mbtiPredictionOutputDTO.getMbti());
+//        System.out.println("mbti = " + mbtiPredictionOutputDTO.getMbti());
 
         //ChatGPT API 호출 -> mbti + userPrompt requestBody에 담아서 요청 보내서 gptPrompt 받아온다.
         //gptResponse는 Json문자열임, gpt의 답변말고도 여러 정보 포함되어있음.
@@ -149,7 +149,7 @@ public class ChatService {
         String gptResponse = chatGptService.callChatGPTAPI(mbtiPredictionOutputDTO.getMbti(), userPrompt);
         JsonNode gptPromptJson = objectMapper.readTree(gptResponse);
         String gptPrompt = gptPromptJson.get("choices").get(0).get("message").get("content").asText();
-        System.out.println("gptPrompt = " + gptPrompt);
+//        System.out.println("gptPrompt = " + gptPrompt);
 
         //gptMessage도 message테이블에 저장하기
         Message gptMessage = Message.builder()
