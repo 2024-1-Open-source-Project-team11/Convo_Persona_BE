@@ -30,10 +30,12 @@ public class ChatController {
      */
     @GetMapping("/chat")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
-    public GetChatLogDTO getChatLog(@RequestHeader("Authorization") Long memberId) {
+    public ResponseEntity<GetChatLogDTO> getChatLog(@RequestHeader("Authorization") Long memberId) {
+        System.out.println("--------------------------");
+        System.out.println("memberId = " + memberId);
         GetChatLogDTO getChatLogDTO = chatService.getChats(memberId);
         System.out.println("채팅 이력 불러오기 GetMapping 성공");
-        return getChatLogDTO;
+        return ResponseEntity.ok(getChatLogDTO);
         //{chatId, List<Message> messageList} 반환
         // message객체(id, sender, content) 리스트로 응답하기(시간 순대로 저장되어 있을거임)
     }
@@ -60,8 +62,8 @@ public class ChatController {
         // Demo 이후에는 POST "/chat/{chatId}"으로 수정해야함
         // -> 일단 chatId는 0으로 지정해줄 것(Member당 Chat이 1개인 상황이기 때문)
         // chatId를 가지는 Chat이 있는지 확인한다. 없으면 Exception 발생시키기.
-        
-        Long chatId = 1L;
+        Long chatId = chatService.getChatId(memberId);
+//        Long chatId = 1L;
 
         //Message userMessage = new Message(1L, Sender.USER, addChatReqDTO.getContent());
         // chatService -> 사용자가 보낸 userPrompt 기반, GPT 답변 받아오기

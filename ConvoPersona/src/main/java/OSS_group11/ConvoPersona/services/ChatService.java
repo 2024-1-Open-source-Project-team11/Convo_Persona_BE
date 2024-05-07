@@ -16,6 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,16 +49,46 @@ public class ChatService {
      * @param memberId
      * @return
      */
-
     public GetChatLogDTO getChats(Long memberId) {
-        List<Chat> chatList = chatRepository.findAllByMemberId(memberId);
-        // Demo버전에선 chatList에서 하나의 chat만 있는 걸로 가정
-        if (chatList.isEmpty()) {
+        System.out.println("ChatService.getChats() 진입 성공");
+        Optional<Chat> chat = chatRepository.findByMemberId(memberId);
+        Optional<Member> member = memberRepository.findById(memberId);
+        List<Message> tempMessageList = new ArrayList<>();
+
+        //회원의 과거 채팅 이력이 없으면
+        //채팅 새로 만들어준다(savedChat)
+        if (chat.isEmpty()) {
+            Chat savedChat = chatRepository.save(Chat.builder()
+                    .member(member.get())
+                    .build());
+
+            // 새로 만든 savedChat에는 message가 하나도 없을 것이다.
+            // 따라서 messageList에는 null이 저장되어있을 것. 빈 리스트를 반환해준다.
+            List<Message> messageList = savedChat.getMessages();
+
+            //빈 문자열인 tempMessageList를 반환해준다.
+            return new GetChatLogDTO(savedChat.getChatId(), tempMessageList);
+        }
+
+        //회원의 과거 채팅이 있으면 해당 채팅 불러오기
+        List<Message> messageList = chat.get().getMessages();
+        tempMessageList.addAll(messageList);
+        Collections.reverse(tempMessageList);
+        for (Message message : tempMessageList) {
+            System.out.println("message = " + message.getContent());
+        }
+        Long chatId = chat.get().getChatId();
+        return new GetChatLogDTO(chatId, tempMessageList);
+    }
+
+    public Long getChatId(Long memberId) {
+        Optional<Chat> chat = chatRepository.findByMemberId(memberId);
+
+        if (chat.isEmpty()) {
             return null;
         }
-        List<Message> messageList = chatList.get(0).getMessages();
-        GetChatLogDTO getChatLogDTO = new GetChatLogDTO(chatList.get(0).getChatId(), messageList);
-        return getChatLogDTO;
+
+        return chat.get().getChatId();
     }
 
 
@@ -127,6 +159,8 @@ public class ChatService {
                 .build();
         Message savedGptMessage = messageRepository.save(gptMessage);
 
+
+        //순환참조 문제를 막기 위해,
         //Entity 자체를 DTO로 넘겨주지 않고, 새 Message 객체 만들어서 넘겨준다.
         Message tempUserMessage = Message.builder()
                 .id(savedUserMessage.getId())
@@ -145,9 +179,11 @@ public class ChatService {
 
 
     public void deleteAllMessage(Long memberId) {
-        List<Chat> chatList = chatRepository.findAllByMemberId(memberId);
+        Optional<Chat> chat = chatRepository.findByMemberId(memberId);
         Optional<Member> member = memberRepository.findById(memberId);
-        Long chatId = chatList.get(0).getChatId();
+
+        Long chatId = chat.get().getChatId();
+
         chatRepository.deleteById(chatId);      //chat을 삭제하면 해당 chat에 속한 메시지들도 모두 삭제된다.
 
         chatRepository.save(Chat.builder()
