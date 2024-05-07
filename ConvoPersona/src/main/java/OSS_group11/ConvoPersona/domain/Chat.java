@@ -1,6 +1,8 @@
 package OSS_group11.ConvoPersona.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,6 +25,14 @@ public class Chat extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages;
+
+    @Builder
+    public Chat(Long chatId, Member member, List<Message> messages) {
+        this.chatId = chatId;
+        this.member = member;
+        this.messages = messages;
+    }
 }
