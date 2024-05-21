@@ -13,6 +13,7 @@ import OSS_group11.ConvoPersona.repositories.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class ChatService {
 
 
@@ -132,6 +134,8 @@ public class ChatService {
         userPromptList.add("근데 여자친구는 날 만나고 싶어하지 않는 것 같아서 더욱 심란해");
         userPromptList.add(userPrompt);
         */
+
+        //Sender.USER로 검색하면 안 되고, memberId + Sender.USER로 검색해야함.
         List<String> userPromptLog = messageRepository.findBySenderOrderByIdAsc(Sender.USER)
                 .stream()
                 .map(Message::getContent) // 각 메시지의 내용(content)을 추출하여 맵핑
