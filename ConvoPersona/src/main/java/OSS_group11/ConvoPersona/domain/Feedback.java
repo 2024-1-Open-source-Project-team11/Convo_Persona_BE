@@ -1,7 +1,12 @@
 package OSS_group11.ConvoPersona.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+
+@Getter
+@NoArgsConstructor
 @Entity
 @Table(name = "feedback")
 public class Feedback extends BaseTimeEntity {
