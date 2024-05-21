@@ -19,12 +19,12 @@ public class Chat extends BaseTimeEntity {
     @Column(name = "chat_id")
     private Long chatId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Message> messages;
 
     @Builder
