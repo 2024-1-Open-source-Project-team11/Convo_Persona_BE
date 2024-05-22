@@ -5,10 +5,8 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "message")
@@ -25,11 +23,11 @@ public class Message extends BaseTimeEntity {
     private String content;
 
     @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "chat_id")
     private Chat chat;
 
-    @OneToOne(mappedBy = "gptMessage", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "gptMessage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Feedback feedback;
 
     @Builder

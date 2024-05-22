@@ -77,10 +77,16 @@ public class ChatController {
         return ResponseEntity.ok(addChatResDTO);
     }
 
+    /***
+     * 유저가 채팅창에서 새로고침 버튼 누르면,
+     * 채팅 내역이 DB에 백업되고,
+     * 채팅 기록은 삭제된다.
+     * @param memberId
+     */
     @DeleteMapping("/chat")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
     public void deleteChatLog(@RequestHeader("Authorization") Long memberId) {
-        chatService.deleteAllMessage(memberId);
+        chatService.backupAndDeleteChat(memberId);
     }
 
 }
