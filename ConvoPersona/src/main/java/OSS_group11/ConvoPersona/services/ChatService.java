@@ -226,6 +226,13 @@ public class ChatService {
         Chat chat = chatRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("chat doesn't exist"));
 
+        // 사용자 대화기록이 없으면 백업할 것도 없기 때문에, 막아야한다.
+        // Otherwise, 새로고침 누를 때마다 chatId가 계속 archived_chat테이블에 계속 쌓임
+        List<Message> messages = chat.getMessages();
+        if (messages.isEmpty()) {
+            return;
+        }
+
         ArchivedChat archivedChat = ArchivedChat.builder()
                 .member(member)
                 .build();
