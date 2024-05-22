@@ -1,5 +1,6 @@
 package OSS_group11.ConvoPersona.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -19,6 +20,7 @@ public class Chat extends BaseTimeEntity {
     @Column(name = "chat_id")
     private Long chatId;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;

@@ -1,6 +1,7 @@
 package OSS_group11.ConvoPersona.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,6 +28,7 @@ public class Message extends BaseTimeEntity {
     @JoinColumn(name = "chat_id")
     private Chat chat;
 
+    @JsonManagedReference
     @OneToOne(mappedBy = "gptMessage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Feedback feedback;
 

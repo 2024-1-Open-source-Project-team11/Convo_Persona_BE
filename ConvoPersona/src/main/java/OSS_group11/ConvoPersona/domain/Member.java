@@ -1,5 +1,6 @@
 package OSS_group11.ConvoPersona.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,9 +20,11 @@ public class Member {
     private String name;
     private String password;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Chat> chatList = new ArrayList<>();
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Feedback> feedbackList = new ArrayList<>();
 }
