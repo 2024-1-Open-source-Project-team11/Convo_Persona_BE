@@ -23,6 +23,7 @@ public class FeedbackController {
      * @return
      */
     @PostMapping("/feedback")
+    @CrossOrigin(origins = "https://convo-persona.netlify.app")
     public ResponseEntity<?> createFeedback(@RequestHeader("Authorization") Long memberId,
                                             @RequestBody AddFeedbackReqDTO addFeedbackReqDTO) {
         feedbackService.saveFeedback(memberId, addFeedbackReqDTO);

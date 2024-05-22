@@ -5,6 +5,7 @@ import OSS_group11.ConvoPersona.domain.Member;
 import OSS_group11.ConvoPersona.domain.Message;
 import OSS_group11.ConvoPersona.domain.Sender;
 import OSS_group11.ConvoPersona.domain.archive.ArchivedChat;
+import OSS_group11.ConvoPersona.domain.archive.ArchivedFeedback;
 import OSS_group11.ConvoPersona.domain.archive.ArchivedMessage;
 import OSS_group11.ConvoPersona.dtos.AddChatResDTO;
 import OSS_group11.ConvoPersona.dtos.GetChatLogDTO;
@@ -153,7 +154,7 @@ public class ChatService {
         */
 
         //Sender.USER로 검색하면 안 되고, memberId + Sender.USER로 검색해야함.
-        List<String> userPromptLog = messageRepository.findBySenderOrderByIdAsc(Sender.USER)
+        List<String> userPromptLog = messageRepository.findByChatAndSenderOrderByIdAsc(chat, Sender.USER)
                 .stream()
                 .map(Message::getContent) // 각 메시지의 내용(content)을 추출하여 맵핑
                 .toList(); // 맵핑된 내용을 리스트로 변환하여 반환
@@ -226,6 +227,13 @@ public class ChatService {
         Chat chat = chatRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("chat doesn't exist"));
 
+        // 사용자 대화기록이 없으면 백업할 것도 없기 때문에, 막아야한다.
+        // Otherwise, 새로고침 누를 때마다 chatId가 계속 archived_chat테이블에 계속 쌓임
+        List<Message> messages = chat.getMessages();
+        if (messages.isEmpty()) {
+            return;
+        }
+
         ArchivedChat archivedChat = ArchivedChat.builder()
                 .member(member)
                 .build();
@@ -238,9 +246,14 @@ public class ChatService {
                     //.feedback()
                     .build();
             if (message.getFeedback() != null) {
-                /*
-                 * feedback 기능 구현 후, 채워질 곳.
-                 * */
+                //message가 feedback을 갖고 있다면, 해당 feedback 백업
+
+                ArchivedFeedback archivedFeedback = ArchivedFeedback.builder()
+                        .archivedMessage(archivedMessage)
+                        .content(message.getFeedback().getContent())
+                        .member(member)
+                        .build();
+                archivedFeedbackRepository.save(archivedFeedback);
             }
 
             archivedMessageRepository.save(archivedMessage);

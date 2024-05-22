@@ -19,7 +19,7 @@ public class ChatGptService {
                 .baseUrl("https://api.openai.com/v1/chat/completions")
                 .build();
     }
-
+    
     public String callChatGPTAPI(String mbti, String userPrompt) {
         // 사용자 메시지와 시스템 프롬프트를 포함한 요청 본문 생성
 

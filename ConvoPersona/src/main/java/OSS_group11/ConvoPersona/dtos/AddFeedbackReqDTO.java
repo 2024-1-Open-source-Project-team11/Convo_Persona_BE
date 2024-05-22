@@ -13,6 +13,6 @@ public class AddFeedbackReqDTO {
     @JsonProperty("id")
     private Long messageId;        //피드백을 남긴 메시지 id
 
-    @JsonProperty("content")
+    @JsonProperty("feedback")
     private String feedbackContent; //피드백 내용
 }
