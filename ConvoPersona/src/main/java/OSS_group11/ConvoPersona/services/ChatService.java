@@ -247,9 +247,10 @@ public class ChatService {
                     .build();
             if (message.getFeedback() != null) {
                 //message가 feedback을 갖고 있다면, 해당 feedback 백업
+
                 ArchivedFeedback archivedFeedback = ArchivedFeedback.builder()
                         .archivedMessage(archivedMessage)
-                        .content(archivedMessage.getContent())
+                        .content(message.getFeedback().getContent())
                         .member(member)
                         .build();
                 archivedFeedbackRepository.save(archivedFeedback);
