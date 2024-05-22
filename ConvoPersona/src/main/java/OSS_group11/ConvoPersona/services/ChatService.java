@@ -122,18 +122,12 @@ public class ChatService {
      * @throws JsonProcessingException
      */
     public AddChatResDTO getGptMessage(Long chatId, String userPrompt) throws JsonProcessingException {
-        /*
-            To Do :
-            userMessage DB에 저장해야한다. (completed)
-            gptMessage DB에 저장해야한다. (completed)
-         */
-
-//        System.out.println("chatId = " + chatId);
 
         //사용자가 입력한 새 prompt 추가 저장하기.
         Chat chat = chatRepository.findById(chatId).orElse(null);
         // chatId로 조회, 없으면 null 반환
         if (chat == null) return null;
+
         Message userMessage = Message.builder()
                 .chat(chat)
                 .content(userPrompt)
@@ -142,28 +136,18 @@ public class ChatService {
         Message savedUserMessage = messageRepository.save(userMessage);
 
 
-        // 사용자의 prompt 불러오기 (사용자가 막 입력한 userPrompt도 포함)
-        // 메시지 내용을 담을 List<String> 생성
-        /*
-        List<String> userPromptList = new ArrayList<>();
-        userPromptList.add("안녕");
-        userPromptList.add("내 이름은 김도균이라고 해");
-        userPromptList.add("요즘 여자친구랑 많이 만나지 못해서 서운한 것 같아");
-        userPromptList.add("근데 여자친구는 날 만나고 싶어하지 않는 것 같아서 더욱 심란해");
-        userPromptList.add(userPrompt);
-        */
-
         //Sender.USER로 검색하면 안 되고, memberId + Sender.USER로 검색해야함.
+        //하지만, 나중에는 한 멤버가 여러 채팅을 가질 수 있기 때문에, 해당 로직 반영해야한다
         List<String> userPromptLog = messageRepository.findByChatAndSenderOrderByIdAsc(chat, Sender.USER)
                 .stream()
                 .map(Message::getContent) // 각 메시지의 내용(content)을 추출하여 맵핑
                 .toList(); // 맵핑된 내용을 리스트로 변환하여 반환
 
-
         // FastApiService를 이용해서, userPrompt로 MBTI를 예측한 결과를 받아온다.
         MbtiPredictionOutputDTO mbtiPredictionOutputDTO = fastApiService.predictMbti(userPromptLog);
 
-//        System.out.println("mbti = " + mbtiPredictionOutputDTO.getMbti());
+        //받아온 MBTI예측값으로 savedUserMessage의 MBTI 값 update
+        savedUserMessage.updateMbti(mbtiPredictionOutputDTO.getMbti());
 
         //ChatGPT API 호출 -> mbti + userPrompt requestBody에 담아서 요청 보내서 gptPrompt 받아온다.
         //gptResponse는 Json문자열임, gpt의 답변말고도 여러 정보 포함되어있음.
@@ -181,9 +165,12 @@ public class ChatService {
                 .build();
         Message savedGptMessage = messageRepository.save(gptMessage);
 
+        return new AddChatResDTO(savedUserMessage, savedGptMessage);
 
         //순환참조 문제를 막기 위해,
         //Entity 자체를 DTO로 넘겨주지 않고, 새 Message 객체 만들어서 넘겨준다.
+        //@JsonManagedReference + @JsonBackReference로 해결함. 아래 코드는 의미없는듯? DTO에 담아서 보내니까
+        /*
         Message tempUserMessage = Message.builder()
                 .id(savedUserMessage.getId())
                 .sender(savedUserMessage.getSender())
@@ -195,8 +182,9 @@ public class ChatService {
                 .sender(savedGptMessage.getSender())
                 .content(savedGptMessage.getContent())
                 .build();
+        */
 
-        return new AddChatResDTO(tempUserMessage, tempGptMessage);
+
     }
 
     /***
@@ -243,7 +231,7 @@ public class ChatService {
                     .archivedChat(archivedChat)
                     .content(message.getContent())
                     .createdAt(message.getCreatedAt())
-                    //.feedback()
+                    .mbti(message.getMbti())
                     .build();
             if (message.getFeedback() != null) {
                 //message가 feedback을 갖고 있다면, 해당 feedback 백업

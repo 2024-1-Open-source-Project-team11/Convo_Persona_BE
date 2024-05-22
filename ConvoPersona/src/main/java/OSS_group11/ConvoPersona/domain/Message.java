@@ -3,12 +3,15 @@ package OSS_group11.ConvoPersona.domain;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "message")
 public class Message extends BaseTimeEntity {
@@ -23,6 +26,9 @@ public class Message extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Enumerated(EnumType.STRING)
+    private Mbti mbti;
+
     @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "chat_id")
@@ -32,12 +38,11 @@ public class Message extends BaseTimeEntity {
     @OneToOne(mappedBy = "gptMessage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Feedback feedback;
 
-    @Builder
-    public Message(Long id, Sender sender, String content, Chat chat, Feedback feedback) {
-        this.id = id;
-        this.sender = sender;
-        this.content = content;
-        this.chat = chat;
-        this.feedback = feedback;
+    public void updateMbti(String mbti) {
+        try {
+            this.mbti = Mbti.valueOf(mbti);
+        } catch (IllegalArgumentException e) {
+            System.out.println("유효하지 않은 MBTI 유형: " + mbti);
+        }
     }
 }
