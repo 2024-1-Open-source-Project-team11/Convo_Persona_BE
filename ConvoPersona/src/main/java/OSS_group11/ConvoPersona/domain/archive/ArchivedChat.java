@@ -24,7 +24,7 @@ public class ArchivedChat {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "archived_chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "archivedChat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ArchivedMessage> messages = new ArrayList<>();
 
 }
