@@ -154,7 +154,7 @@ public class ChatService {
         */
 
         //Sender.USER로 검색하면 안 되고, memberId + Sender.USER로 검색해야함.
-        List<String> userPromptLog = messageRepository.findBySenderOrderByIdAsc(Sender.USER)
+        List<String> userPromptLog = messageRepository.findByChatAndSenderOrderByIdAsc(chat, Sender.USER)
                 .stream()
                 .map(Message::getContent) // 각 메시지의 내용(content)을 추출하여 맵핑
                 .toList(); // 맵핑된 내용을 리스트로 변환하여 반환
