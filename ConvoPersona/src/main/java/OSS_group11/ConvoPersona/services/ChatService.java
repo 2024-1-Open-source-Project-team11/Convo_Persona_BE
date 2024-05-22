@@ -5,6 +5,7 @@ import OSS_group11.ConvoPersona.domain.Member;
 import OSS_group11.ConvoPersona.domain.Message;
 import OSS_group11.ConvoPersona.domain.Sender;
 import OSS_group11.ConvoPersona.domain.archive.ArchivedChat;
+import OSS_group11.ConvoPersona.domain.archive.ArchivedFeedback;
 import OSS_group11.ConvoPersona.domain.archive.ArchivedMessage;
 import OSS_group11.ConvoPersona.dtos.AddChatResDTO;
 import OSS_group11.ConvoPersona.dtos.GetChatLogDTO;
@@ -245,9 +246,13 @@ public class ChatService {
                     //.feedback()
                     .build();
             if (message.getFeedback() != null) {
-                /*
-                 * feedback 기능 구현 후, 채워질 곳.
-                 * */
+                //message가 feedback을 갖고 있다면, 해당 feedback 백업
+                ArchivedFeedback archivedFeedback = ArchivedFeedback.builder()
+                        .archivedMessage(archivedMessage)
+                        .content(archivedMessage.getContent())
+                        .member(member)
+                        .build();
+                archivedFeedbackRepository.save(archivedFeedback);
             }
 
             archivedMessageRepository.save(archivedMessage);
