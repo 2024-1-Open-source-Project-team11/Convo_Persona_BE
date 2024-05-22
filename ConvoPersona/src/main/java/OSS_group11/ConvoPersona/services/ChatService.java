@@ -4,12 +4,18 @@ import OSS_group11.ConvoPersona.domain.Chat;
 import OSS_group11.ConvoPersona.domain.Member;
 import OSS_group11.ConvoPersona.domain.Message;
 import OSS_group11.ConvoPersona.domain.Sender;
+import OSS_group11.ConvoPersona.domain.archive.ArchivedChat;
+import OSS_group11.ConvoPersona.domain.archive.ArchivedMessage;
 import OSS_group11.ConvoPersona.dtos.AddChatResDTO;
 import OSS_group11.ConvoPersona.dtos.GetChatLogDTO;
 import OSS_group11.ConvoPersona.dtos.MbtiPredictionOutputDTO;
 import OSS_group11.ConvoPersona.repositories.ChatRepository;
+import OSS_group11.ConvoPersona.repositories.FeedbackRepository;
 import OSS_group11.ConvoPersona.repositories.MemberRepository;
 import OSS_group11.ConvoPersona.repositories.MessageRepository;
+import OSS_group11.ConvoPersona.repositories.archive.ArchivedChatRepository;
+import OSS_group11.ConvoPersona.repositories.archive.ArchivedFeedbackRepository;
+import OSS_group11.ConvoPersona.repositories.archive.ArchivedMessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,19 +38,30 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final MessageRepository messageRepository;
     private final MemberRepository memberRepository;
+    private final FeedbackRepository feedbackRepository;
+    private final ArchivedChatRepository archivedChatRepository;
+    private final ArchivedMessageRepository archivedMessageRepository;
+    private final ArchivedFeedbackRepository archivedFeedbackRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     @Autowired
     public ChatService(FastApiService fastApiService, ChatGptService chatGptService,
                        ChatRepository chatRepository, MessageRepository messageRepository,
-                       MemberRepository memberRepository) {
+                       MemberRepository memberRepository, FeedbackRepository feedbackRepository,
+                       ArchivedChatRepository archivedChatRepository,
+                       ArchivedMessageRepository archivedMessageRepository,
+                       ArchivedFeedbackRepository archivedFeedbackRepository) {
         this.fastApiService = fastApiService;
         this.chatGptService = chatGptService;
         this.chatRepository = chatRepository;
         this.messageRepository = messageRepository;
         this.memberRepository = memberRepository;
+        this.feedbackRepository = feedbackRepository;
+        this.archivedChatRepository = archivedChatRepository;
+        this.archivedMessageRepository = archivedMessageRepository;
+        this.archivedFeedbackRepository = archivedFeedbackRepository;
     }
-
 
     /***
      * 사용자 id로 chatList 불러오기
@@ -181,7 +198,10 @@ public class ChatService {
         return new AddChatResDTO(tempUserMessage, tempGptMessage);
     }
 
-
+    /***
+     * Message 데이터를 삭제하기 전에, 백업용 테이블에 저장한 뒤에 삭제한다.
+     * @param memberId
+     */
     public void deleteAllMessage(Long memberId) {
         Optional<Chat> chat = chatRepository.findByMemberId(memberId);
         Optional<Member> member = memberRepository.findById(memberId);
@@ -192,6 +212,48 @@ public class ChatService {
 
         chatRepository.save(Chat.builder()
                 .member(member.get())
+                .build());
+    }
+
+    /***
+     * Message 데이터를 삭제하기 전에, 백업용 테이블에 저장한 뒤에 삭제한다.
+     * @param memberId
+     */
+    public void backupAndDeleteChat(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("member doesn't exist"));
+
+        Chat chat = chatRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("chat doesn't exist"));
+
+        ArchivedChat archivedChat = ArchivedChat.builder()
+                .member(member)
+                .build();
+
+        for (Message message : chat.getMessages()) {
+            ArchivedMessage archivedMessage = ArchivedMessage.builder()
+                    .archivedChat(archivedChat)
+                    .content(message.getContent())
+                    .createdAt(message.getCreatedAt())
+                    //.feedback()
+                    .build();
+            if (message.getFeedback() != null) {
+                /*
+                 * feedback 기능 구현 후, 채워질 곳.
+                 * */
+            }
+
+            archivedMessageRepository.save(archivedMessage);
+        }
+
+        archivedChatRepository.save(archivedChat);
+
+        //삭제하기
+        chatRepository.deleteById(chat.getChatId());
+
+        //chat 삭제해서 하나도 없게 되면, 채팅 리스트 띄울 때 에러가 난다.
+        chatRepository.save(Chat.builder()
+                .member(member)
                 .build());
     }
 }
