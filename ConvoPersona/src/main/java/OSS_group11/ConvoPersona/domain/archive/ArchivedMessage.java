@@ -1,5 +1,6 @@
 package OSS_group11.ConvoPersona.domain.archive;
 
+import OSS_group11.ConvoPersona.domain.Mbti;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,9 +28,13 @@ public class ArchivedMessage {
     @Column(name = "archived_message_content")
     private String content;
 
+    @Column(name = "archived_message_mbti")
+    @Enumerated(EnumType.STRING)
+    private Mbti mbti;
+
     @Column(name = "archived_message_created_at")
     private LocalDateTime createdAt;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "archivedMessage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private ArchivedFeedback feedback;
 }
