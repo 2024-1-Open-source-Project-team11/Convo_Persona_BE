@@ -12,4 +12,6 @@ import java.util.List;
 public interface MessageRepository extends JpaRepository<Message, Long> {
     //    List<Message> findBySenderOrderByIdAsc(Sender sender);
     List<Message> findByChatAndSenderOrderByIdAsc(Chat chat, Sender sender);
+
+    List<Message> findByChatOrderByCreatedAtAsc(Chat chat);
 }
