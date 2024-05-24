@@ -1,7 +1,13 @@
 package OSS_group11.ConvoPersona.services;
 
+import OSS_group11.ConvoPersona.domain.Chat;
+import OSS_group11.ConvoPersona.domain.Message;
+import OSS_group11.ConvoPersona.domain.Sender;
+import OSS_group11.ConvoPersona.repositories.ChatRepository;
+import OSS_group11.ConvoPersona.repositories.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -14,19 +20,27 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Transactional
 public class ChatGptService {
-    private final WebClient webClient;
+
     @Value("${chatgpt.api.key}")
     private String apiKey;
 
+    private final WebClient webClient;
+    private final ChatRepository chatRepository;
+    private final MessageRepository messageRepository;
+
+
     @Autowired
-    public ChatGptService(WebClient.Builder webClientBuilder) {
+    public ChatGptService(WebClient.Builder webClientBuilder, MessageRepository messageRepository, ChatRepository chatRepository) {
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.openai.com/v1/chat/completions")
                 .build();
+        this.messageRepository = messageRepository;
+        this.chatRepository = chatRepository;
     }
 
-    public String callChatGPTAPI(String mbti, String userPrompt) throws JsonProcessingException {
+    public String callChatGPTAPI(String mbti, String userPrompt, String historyChat) throws JsonProcessingException {
         // 사용자 메시지와 시스템 프롬프트를 포함한 요청 본문 생성
         String mbtiText =
                 """
@@ -301,18 +315,20 @@ public class ChatGptService {
                         대인 관계
                         명확하고 효율적인 커뮤니케이션을 선호하며, 논리적이고 구조적인 대화를 통해 다른 사람들과 의사소통한다. 이들은 자신의 의견과 생각을 분명하게 표현하며, 타인의 의견에 대해서도 명확한 피드백을 제공한다.
                         """;
+
         Map<String, Object> systemMessage = new HashMap<>();
         systemMessage.put("role", "system");
         systemMessage.put("content", String.format(
                 "사용자의 MBTI는 %s입니다.\n" +
+                        "사용자가 친근함을 느끼도록 반말로 상담을 진행해주세요.\n" +
                         "사용자의 MBTI를 고려하여 맞춤 고민 상담을 진행해주세요.\n" +
                         "답변할 때마다, 사용자의 MBTI는 언급하지말고 답변하세요.\n" +
                         "대화 중간에 다른 주제에 대해서 얘기하거나 질문하면 절대 대답하지 않고 현재 주제에 대해서 대화해달라고 권유하며 대화를 진행해주세요.\n" +
                         "한 주제에 대해서 고민상담이 끝났다고 판단되면 안부인사와 함께 대화를 종료해주세요.\n" +
                         "대화가 종료되고 나서 사용자가 대화를 시도하려고 하면 대화가 종료되었다고 알려주고 새로고침을 시도하여 대화를 다시 시작해달라고 해주세요.\n" +
-                        "%s를 참고하여 고민상담해주세요.",
-                mbti, mbtiText)
-        );
+                        "%s를 참고하여 고민상담해주세요.\n" +
+                        "%s", mbti, mbtiText, historyChat));
+
 
         Map<String, Object> userMessage = new HashMap<>();
         userMessage.put("role", "user");
@@ -337,4 +353,33 @@ public class ChatGptService {
                 .bodyToMono(String.class)
                 .block();
     }
+
+    public String getHistoryMessages(Long chatId) {
+        String historyMessage = "";
+
+
+        // 대화내용 DB에서 가져오기
+        Chat chat = chatRepository.findById(chatId).get();
+        List<Message> allMessages = messageRepository.findByChatOrderByCreatedAtAsc(chat);
+
+        String title = "대화 기록\n";
+        historyMessage += title;
+
+        //대화내용이 없으면 빈 문자열 리턴
+        if (allMessages.isEmpty()) return "";
+
+        for (Message message : allMessages) {
+            if (message.getSender() == Sender.USER) {
+                historyMessage += "USER : " + message.getContent() + "\n";
+            } else {
+                //Sender.GPT일 때
+                historyMessage += "GPT : " + message.getContent() + "\n";
+            }
+        }
+
+        System.out.println("historyMessage: " + historyMessage + "\n\n");
+
+        return historyMessage;
+    }
+
 }

@@ -18,7 +18,7 @@ public class ArchivedFeedback {
     @Column(name = "archived_feedback_id")
     private Long id;
 
-    @Column(name = "archived_feedback_content")
+    @Column(name = "archived_feedback_content", columnDefinition = "TEXT")
     private String content; // 피드백 내용
 
     @ManyToOne
