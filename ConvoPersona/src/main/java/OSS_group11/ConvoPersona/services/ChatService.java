@@ -1,9 +1,6 @@
 package OSS_group11.ConvoPersona.services;
 
-import OSS_group11.ConvoPersona.domain.Chat;
-import OSS_group11.ConvoPersona.domain.Member;
-import OSS_group11.ConvoPersona.domain.Message;
-import OSS_group11.ConvoPersona.domain.Sender;
+import OSS_group11.ConvoPersona.domain.*;
 import OSS_group11.ConvoPersona.domain.archive.ArchivedChat;
 import OSS_group11.ConvoPersona.domain.archive.ArchivedFeedback;
 import OSS_group11.ConvoPersona.domain.archive.ArchivedMessage;
@@ -128,6 +125,8 @@ public class ChatService {
         // chatId로 조회, 없으면 null 반환
         if (chat == null) return null;
 
+        String historyChat = chatGptService.getHistoryMessages(chatId);
+
         Message userMessage = Message.builder()
                 .chat(chat)
                 .content(userPrompt)
@@ -149,10 +148,10 @@ public class ChatService {
         //받아온 MBTI예측값으로 savedUserMessage의 MBTI 값 update
         savedUserMessage.updateMbti(mbtiPredictionOutputDTO.getMbti());
 
-        //ChatGPT API 호출 -> mbti + userPrompt requestBody에 담아서 요청 보내서 gptPrompt 받아온다.
-        //gptResponse는 Json문자열임, gpt의 답변말고도 여러 정보 포함되어있음.
+        // ChatGPT API 호출 -> mbti + userPrompt requestBody에 담아서 요청 보내서 gptPrompt 받아온다.
+        // gptResponse는 Json문자열임, gpt의 답변말고도 여러 정보 포함되어있음.
         // Json 문자열을 처리해서, gpt 답변(gptPrompt) 추출
-        String gptResponse = chatGptService.callChatGPTAPI(mbtiPredictionOutputDTO.getMbti(), userPrompt);
+        String gptResponse = chatGptService.callChatGPTAPI(mbtiPredictionOutputDTO.getMbti(), userPrompt, historyChat);
         JsonNode gptPromptJson = objectMapper.readTree(gptResponse);
         String gptPrompt = gptPromptJson.get("choices").get(0).get("message").get("content").asText();
 //        System.out.println("gptPrompt = " + gptPrompt);
@@ -162,6 +161,7 @@ public class ChatService {
                 .chat(chat)
                 .sender(Sender.GPT)
                 .content(gptPrompt)
+                .mbti(Mbti.UNDEFINED)
                 .build();
         Message savedGptMessage = messageRepository.save(gptMessage);
 
