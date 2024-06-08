@@ -30,7 +30,6 @@ import java.util.Optional;
 @Transactional
 public class ChatService {
 
-
     private final FastApiService fastApiService;
     private final ChatGptService chatGptService;
     private final ChatRepository chatRepository;
@@ -40,16 +39,15 @@ public class ChatService {
     private final ArchivedChatRepository archivedChatRepository;
     private final ArchivedMessageRepository archivedMessageRepository;
     private final ArchivedFeedbackRepository archivedFeedbackRepository;
+    private final EncryptionService encryptionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
 
     @Autowired
     public ChatService(FastApiService fastApiService, ChatGptService chatGptService,
                        ChatRepository chatRepository, MessageRepository messageRepository,
                        MemberRepository memberRepository, FeedbackRepository feedbackRepository,
-                       ArchivedChatRepository archivedChatRepository,
-                       ArchivedMessageRepository archivedMessageRepository,
-                       ArchivedFeedbackRepository archivedFeedbackRepository) {
+                       ArchivedChatRepository archivedChatRepository, ArchivedMessageRepository archivedMessageRepository,
+                       ArchivedFeedbackRepository archivedFeedbackRepository, EncryptionService encryptionService) {
         this.fastApiService = fastApiService;
         this.chatGptService = chatGptService;
         this.chatRepository = chatRepository;
@@ -59,6 +57,7 @@ public class ChatService {
         this.archivedChatRepository = archivedChatRepository;
         this.archivedMessageRepository = archivedMessageRepository;
         this.archivedFeedbackRepository = archivedFeedbackRepository;
+        this.encryptionService = encryptionService;
     }
 
     /***
