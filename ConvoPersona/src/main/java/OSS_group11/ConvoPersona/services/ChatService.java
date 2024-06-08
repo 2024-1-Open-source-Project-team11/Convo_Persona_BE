@@ -30,7 +30,6 @@ import java.util.Optional;
 @Transactional
 public class ChatService {
 
-
     private final FastApiService fastApiService;
     private final ChatGptService chatGptService;
     private final ChatRepository chatRepository;
@@ -40,16 +39,15 @@ public class ChatService {
     private final ArchivedChatRepository archivedChatRepository;
     private final ArchivedMessageRepository archivedMessageRepository;
     private final ArchivedFeedbackRepository archivedFeedbackRepository;
+    private final EncryptionService encryptionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
 
     @Autowired
     public ChatService(FastApiService fastApiService, ChatGptService chatGptService,
                        ChatRepository chatRepository, MessageRepository messageRepository,
                        MemberRepository memberRepository, FeedbackRepository feedbackRepository,
-                       ArchivedChatRepository archivedChatRepository,
-                       ArchivedMessageRepository archivedMessageRepository,
-                       ArchivedFeedbackRepository archivedFeedbackRepository) {
+                       ArchivedChatRepository archivedChatRepository, ArchivedMessageRepository archivedMessageRepository,
+                       ArchivedFeedbackRepository archivedFeedbackRepository, EncryptionService encryptionService) {
         this.fastApiService = fastApiService;
         this.chatGptService = chatGptService;
         this.chatRepository = chatRepository;
@@ -59,6 +57,7 @@ public class ChatService {
         this.archivedChatRepository = archivedChatRepository;
         this.archivedMessageRepository = archivedMessageRepository;
         this.archivedFeedbackRepository = archivedFeedbackRepository;
+        this.encryptionService = encryptionService;
     }
 
     /***
@@ -118,14 +117,15 @@ public class ChatService {
      * @return
      * @throws JsonProcessingException
      */
-    public AddChatResDTO getGptMessage(Long chatId, String userPrompt) throws JsonProcessingException {
+    public AddChatResDTO getGptMessage(Long chatId, String userPrompt) throws Exception {
 
         //사용자가 입력한 새 prompt 추가 저장하기.
         Chat chat = chatRepository.findById(chatId).orElse(null);
         // chatId로 조회, 없으면 null 반환
         if (chat == null) return null;
 
-        String historyChat = chatGptService.getHistoryMessages(chatId);
+        String historyChat = getHistoryMessages(chatId);
+
 
         Message userMessage = Message.builder()
                 .chat(chat)
@@ -137,9 +137,20 @@ public class ChatService {
 
         //Sender.USER로 검색하면 안 되고, memberId + Sender.USER로 검색해야함.
         //하지만, 나중에는 한 멤버가 여러 채팅을 가질 수 있기 때문에, 해당 로직 반영해야한다
+        /*
+            FastAPI 서버로 요청보낼 때, 복호화해서 요청보내기
+        */
         List<String> userPromptLog = messageRepository.findByChatAndSenderOrderByIdAsc(chat, Sender.USER)
                 .stream()
-                .map(Message::getContent) // 각 메시지의 내용(content)을 추출하여 맵핑
+                .map(message -> {
+                    try {
+                        return encryptionService.decrypt(message.getContent()); //복호화
+                    } catch (Exception e) {
+                        // 복호화에 실패한 경우 처리
+                        e.printStackTrace();
+                        return null; // 또는 다른 값을 반환하거나 예외를 throw할 수 있음
+                    }
+                })
                 .toList(); // 맵핑된 내용을 리스트로 변환하여 반환
 
         // FastApiService를 이용해서, userPrompt로 MBTI를 예측한 결과를 받아온다.
@@ -151,16 +162,23 @@ public class ChatService {
         // ChatGPT API 호출 -> mbti + userPrompt requestBody에 담아서 요청 보내서 gptPrompt 받아온다.
         // gptResponse는 Json문자열임, gpt의 답변말고도 여러 정보 포함되어있음.
         // Json 문자열을 처리해서, gpt 답변(gptPrompt) 추출
-        String gptResponse = chatGptService.callChatGPTAPI(mbtiPredictionOutputDTO.getMbti(), userPrompt, historyChat);
+        /*
+            chatGPT API로 요청보낼 땐 복호화
+        */
+        String gptResponse = chatGptService.callChatGPTAPI(mbtiPredictionOutputDTO.getMbti(),
+                encryptionService.encrypt(userPrompt), historyChat);
         JsonNode gptPromptJson = objectMapper.readTree(gptResponse);
         String gptPrompt = gptPromptJson.get("choices").get(0).get("message").get("content").asText();
 //        System.out.println("gptPrompt = " + gptPrompt);
 
         //gptMessage도 message테이블에 저장하기
+        /*
+            gptPrompt DB에 저장할 때, 암호화해서 저장하기
+        */
         Message gptMessage = Message.builder()
                 .chat(chat)
                 .sender(Sender.GPT)
-                .content(gptPrompt)
+                .content(encryptionService.encrypt(gptPrompt))
                 .mbti(Mbti.UNDEFINED)
                 .build();
         Message savedGptMessage = messageRepository.save(gptMessage);
@@ -185,6 +203,40 @@ public class ChatService {
         */
 
 
+    }
+
+    /***
+     * chatGPT API에 요청보낼 때 system prompt에 담길 상담내용 가공
+     * 대화내용 DB에서 조회해서, 형식에 맞게 문자열 생성
+     * @param chatId
+     * @return
+     */
+    private String getHistoryMessages(Long chatId) {
+        String historyMessage = "";
+
+
+        // 대화내용 DB에서 가져오기
+        Chat chat = chatRepository.findById(chatId).get();
+        List<Message> allMessages = messageRepository.findByChatOrderByCreatedAtAsc(chat);
+
+        String title = "대화 기록\n";
+        historyMessage += title;
+
+        //대화내용이 없으면 빈 문자열 리턴
+        if (allMessages.isEmpty()) return "";
+
+        for (Message message : allMessages) {
+            if (message.getSender() == Sender.USER) {
+                historyMessage += "USER : " + message.getContent() + "\n";
+            } else {
+                //Sender.GPT일 때
+                historyMessage += "GPT : " + message.getContent() + "\n";
+            }
+        }
+
+        System.out.println("historyMessage: " + historyMessage + "\n\n");
+
+        return historyMessage;
     }
 
     /***
