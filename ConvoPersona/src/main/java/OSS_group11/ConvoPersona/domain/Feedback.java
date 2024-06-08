@@ -20,6 +20,7 @@ public class Feedback extends BaseTimeEntity {
     @Column(name = "feedback_id")
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String content;     // 피드백 내용
 
     @JsonBackReference

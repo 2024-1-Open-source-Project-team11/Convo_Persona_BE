@@ -25,7 +25,7 @@ public class ArchivedMessage {
     @JoinColumn(name = "archived_chat_id")
     private ArchivedChat archivedChat;
 
-    @Column(name = "archived_message_content")
+    @Column(name = "archived_message_content", columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "archived_message_mbti")
