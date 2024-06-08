@@ -2,6 +2,8 @@ package OSS_group11.ConvoPersona.controllers;
 
 import OSS_group11.ConvoPersona.dtos.SignInReqDTO;
 import OSS_group11.ConvoPersona.dtos.SignInResDTO;
+import OSS_group11.ConvoPersona.dtos.SignUpReqDTO;
+import OSS_group11.ConvoPersona.dtos.SignUpResDTO;
 import OSS_group11.ConvoPersona.services.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,13 @@ public class MemberController {
     @Autowired
     public MemberController(MemberService memberService) {
         this.memberService = memberService;
+    }
+
+    @PostMapping("/user/sign-up")
+    @CrossOrigin(origins = "https://convo-persona.netlify.app")
+    public ResponseEntity<SignUpResDTO> signUp(@RequestBody SignUpReqDTO signUpReqDTO) {
+        SignUpResDTO signUpResDTO = memberService.join(signUpReqDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(signUpResDTO);
     }
 
     /***
