@@ -1,8 +1,5 @@
 package OSS_group11.ConvoPersona.services;
 
-import OSS_group11.ConvoPersona.domain.Chat;
-import OSS_group11.ConvoPersona.domain.Message;
-import OSS_group11.ConvoPersona.domain.Sender;
 import OSS_group11.ConvoPersona.repositories.ChatRepository;
 import OSS_group11.ConvoPersona.repositories.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,8 +24,6 @@ public class ChatGptService {
     private String apiKey;
 
     private final WebClient webClient;
-    private final ChatRepository chatRepository;
-    private final MessageRepository messageRepository;
 
 
     @Autowired
@@ -36,8 +31,6 @@ public class ChatGptService {
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.openai.com/v1/chat/completions")
                 .build();
-        this.messageRepository = messageRepository;
-        this.chatRepository = chatRepository;
     }
 
     public String callChatGPTAPI(String mbti, String userPrompt, String historyChat) throws JsonProcessingException {
@@ -354,32 +347,5 @@ public class ChatGptService {
                 .block();
     }
 
-    public String getHistoryMessages(Long chatId) {
-        String historyMessage = "";
-
-
-        // 대화내용 DB에서 가져오기
-        Chat chat = chatRepository.findById(chatId).get();
-        List<Message> allMessages = messageRepository.findByChatOrderByCreatedAtAsc(chat);
-
-        String title = "대화 기록\n";
-        historyMessage += title;
-
-        //대화내용이 없으면 빈 문자열 리턴
-        if (allMessages.isEmpty()) return "";
-
-        for (Message message : allMessages) {
-            if (message.getSender() == Sender.USER) {
-                historyMessage += "USER : " + message.getContent() + "\n";
-            } else {
-                //Sender.GPT일 때
-                historyMessage += "GPT : " + message.getContent() + "\n";
-            }
-        }
-
-        System.out.println("historyMessage: " + historyMessage + "\n\n");
-
-        return historyMessage;
-    }
 
 }

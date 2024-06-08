@@ -125,7 +125,7 @@ public class ChatService {
         // chatId로 조회, 없으면 null 반환
         if (chat == null) return null;
 
-        String historyChat = chatGptService.getHistoryMessages(chatId);
+        String historyChat = getHistoryMessages(chatId);
 
         Message userMessage = Message.builder()
                 .chat(chat)
@@ -185,6 +185,40 @@ public class ChatService {
         */
 
 
+    }
+
+    /***
+     * chatGPT API에 요청보낼 때 system prompt에 담길 상담내용 가공
+     * 대화내용 DB에서 조회해서, 형식에 맞게 문자열 생성
+     * @param chatId
+     * @return
+     */
+    private String getHistoryMessages(Long chatId) {
+        String historyMessage = "";
+
+
+        // 대화내용 DB에서 가져오기
+        Chat chat = chatRepository.findById(chatId).get();
+        List<Message> allMessages = messageRepository.findByChatOrderByCreatedAtAsc(chat);
+
+        String title = "대화 기록\n";
+        historyMessage += title;
+
+        //대화내용이 없으면 빈 문자열 리턴
+        if (allMessages.isEmpty()) return "";
+
+        for (Message message : allMessages) {
+            if (message.getSender() == Sender.USER) {
+                historyMessage += "USER : " + message.getContent() + "\n";
+            } else {
+                //Sender.GPT일 때
+                historyMessage += "GPT : " + message.getContent() + "\n";
+            }
+        }
+
+        System.out.println("historyMessage: " + historyMessage + "\n\n");
+
+        return historyMessage;
     }
 
     /***
