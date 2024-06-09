@@ -328,7 +328,7 @@ public class ChatGptService {
         userMessage.put("content", userPrompt);
 
         Map<String, Object> requestBodyMap = new HashMap<>();
-        requestBodyMap.put("model", "gpt-4-turbo");
+        requestBodyMap.put("model", "gpt-4o");
         requestBodyMap.put("messages", List.of(systemMessage, userMessage));
         requestBodyMap.put("temperature", 0.5);
         requestBodyMap.put("max_tokens", 512);

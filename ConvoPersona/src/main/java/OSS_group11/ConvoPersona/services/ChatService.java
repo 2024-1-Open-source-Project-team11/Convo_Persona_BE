@@ -140,6 +140,15 @@ public class ChatService {
         /*
             FastAPI 서버로 요청보낼 때, 복호화해서 요청보내기
         */
+        //FastAPI로 요청보낼 때 복호화 한 userPrompt
+
+//        System.out.println();
+//        System.out.println("FastAPI로 요청보낼 때 복호화 한 userPrompt : " + encryptionService.encrypt(userPrompt));
+//        System.out.println("FastAPI로 요청보낼 때 복호화 한 userPrompt : " + encryptionService.decrypt(userPrompt));
+//
+//        System.out.println("FastAPI로 요청보낼 때 복호화 한 userPrompt : " + encryptionService.encrypt(encryptionService.encrypt(userPrompt)));
+//        System.out.println();
+
         List<String> userPromptLog = messageRepository.findByChatAndSenderOrderByIdAsc(chat, Sender.USER)
                 .stream()
                 .map(message -> {
@@ -153,6 +162,13 @@ public class ChatService {
                 })
                 .toList(); // 맵핑된 내용을 리스트로 변환하여 반환
 
+//        System.out.println("userPromptLog 보여주기 --------------------------------");
+//
+//        for (String log : userPromptLog) {
+//            System.out.println(log);
+//            System.out.println(log + ": " + encryptionService.decrypt(log));
+//        }
+
         // FastApiService를 이용해서, userPrompt로 MBTI를 예측한 결과를 받아온다.
         MbtiPredictionOutputDTO mbtiPredictionOutputDTO = fastApiService.predictMbti(userPromptLog);
 
@@ -165,8 +181,9 @@ public class ChatService {
         /*
             chatGPT API로 요청보낼 땐 복호화
         */
+        System.out.println("chatGPT API로 요청보낼 때 암호화 한 userPrompt : " + encryptionService.decrypt(userPrompt));
         String gptResponse = chatGptService.callChatGPTAPI(mbtiPredictionOutputDTO.getMbti(),
-                encryptionService.encrypt(userPrompt), historyChat);
+                encryptionService.decrypt(userPrompt), historyChat);
         JsonNode gptPromptJson = objectMapper.readTree(gptResponse);
         String gptPrompt = gptPromptJson.get("choices").get(0).get("message").get("content").asText();
 //        System.out.println("gptPrompt = " + gptPrompt);
