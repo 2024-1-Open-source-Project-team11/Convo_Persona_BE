@@ -1,7 +1,5 @@
 package OSS_group11.ConvoPersona.services;
 
-import OSS_group11.ConvoPersona.repositories.ChatRepository;
-import OSS_group11.ConvoPersona.repositories.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -24,13 +22,15 @@ public class ChatGptService {
     private String apiKey;
 
     private final WebClient webClient;
+    private final ModerationService moderationService;
 
 
     @Autowired
-    public ChatGptService(WebClient.Builder webClientBuilder, MessageRepository messageRepository, ChatRepository chatRepository) {
+    public ChatGptService(WebClient.Builder webClientBuilder, ModerationService moderationService) {
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.openai.com/v1/chat/completions")
                 .build();
+        this.moderationService = moderationService;
     }
 
     public String callChatGPTAPI(String mbti, String userPrompt, String historyChat) throws JsonProcessingException {
@@ -309,6 +309,12 @@ public class ChatGptService {
                         명확하고 효율적인 커뮤니케이션을 선호하며, 논리적이고 구조적인 대화를 통해 다른 사람들과 의사소통한다. 이들은 자신의 의견과 생각을 분명하게 표현하며, 타인의 의견에 대해서도 명확한 피드백을 제공한다.
                         """;
 
+        // userPrompt moderaiton으로 검열하기
+        Boolean isModerationBlocked = moderationService.moderateText(userPrompt).block();
+        String moderationResult = (isModerationBlocked != null) ? isModerationBlocked.toString() : "unknown";
+        System.out.println("moderationResult = " + moderationResult);     //moderation 결과 출력
+        String moderationText = "유해한 내용이 감지되었습니다. 다른 주제로 대화를 이어나가 주시겠어요?";
+
         Map<String, Object> systemMessage = new HashMap<>();
         systemMessage.put("role", "system");
         systemMessage.put("content", String.format(
@@ -319,8 +325,9 @@ public class ChatGptService {
                         "대화 중간에 다른 주제에 대해서 얘기하거나 질문하면 절대 대답하지 않고 현재 주제에 대해서 대화해달라고 권유하며 대화를 진행해주세요.\n" +
                         "한 주제에 대해서 고민상담이 끝났다고 판단되면 안부인사와 함께 대화를 종료해주세요.\n" +
                         "대화가 종료되고 나서 사용자가 대화를 시도하려고 하면 대화가 종료되었다고 알려주고 새로고침을 시도하여 대화를 다시 시작해달라고 해주세요.\n" +
-                        "%s를 참고하여 고민상담해주세요.\n" +
-                        "%s", mbti, mbtiText, historyChat));
+                        "'%s'를 참고하여 고민상담해주세요.\n" +
+                        "moderation 검증 결과는 %s입니다. True라면 적절하지 않거나 유해한 내용이므로 '%s'라고 답변해주세요.\n" +
+                        "%s", mbti, mbtiText, moderationResult, moderationText, historyChat));
 
 
         Map<String, Object> userMessage = new HashMap<>();
@@ -337,6 +344,8 @@ public class ChatGptService {
         ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(requestBodyMap);
 
+        //chatGPT API 요청 보낼 때, requestBody 테스트
+        System.out.println("requestBody = " + requestBody);
 
         return webClient.post()
                 .header("Authorization", "Bearer " + apiKey)
