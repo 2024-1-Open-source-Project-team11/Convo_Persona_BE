@@ -228,7 +228,7 @@ public class ChatService {
      * @param chatId
      * @return
      */
-    private String getHistoryMessages(Long chatId) {
+    private String getHistoryMessages(Long chatId) throws Exception {
         String historyMessage = "";
 
 
@@ -244,10 +244,10 @@ public class ChatService {
 
         for (Message message : allMessages) {
             if (message.getSender() == Sender.USER) {
-                historyMessage += "USER : " + message.getContent() + "\n";
+                historyMessage += "USER : " + encryptionService.decrypt(message.getContent()) + "\n";
             } else {
                 //Sender.GPT일 때
-                historyMessage += "GPT : " + message.getContent() + "\n";
+                historyMessage += "GPT : " + encryptionService.decrypt(message.getContent()) + "\n";
             }
         }
 
