@@ -18,7 +18,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -40,14 +39,18 @@ public class ChatService {
     private final ArchivedMessageRepository archivedMessageRepository;
     private final ArchivedFeedbackRepository archivedFeedbackRepository;
     private final EncryptionService encryptionService;
+    private final TranslationService translationService;
+    private final ModerationService moderationService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
     public ChatService(FastApiService fastApiService, ChatGptService chatGptService,
                        ChatRepository chatRepository, MessageRepository messageRepository,
                        MemberRepository memberRepository, FeedbackRepository feedbackRepository,
-                       ArchivedChatRepository archivedChatRepository, ArchivedMessageRepository archivedMessageRepository,
-                       ArchivedFeedbackRepository archivedFeedbackRepository, EncryptionService encryptionService) {
+                       ArchivedChatRepository archivedChatRepository,
+                       ArchivedMessageRepository archivedMessageRepository,
+                       ArchivedFeedbackRepository archivedFeedbackRepository,
+                       EncryptionService encryptionService, TranslationService translationService,
+                       ModerationService moderationService) {
         this.fastApiService = fastApiService;
         this.chatGptService = chatGptService;
         this.chatRepository = chatRepository;
@@ -58,6 +61,8 @@ public class ChatService {
         this.archivedMessageRepository = archivedMessageRepository;
         this.archivedFeedbackRepository = archivedFeedbackRepository;
         this.encryptionService = encryptionService;
+        this.translationService = translationService;
+        this.moderationService = moderationService;
     }
 
     /***
@@ -123,6 +128,36 @@ public class ChatService {
         Chat chat = chatRepository.findById(chatId).orElse(null);
         // chatId로 조회, 없으면 null 반환
         if (chat == null) return null;
+
+        // userPrompt 영어로 번역하고,
+        String translateResponse = translationService.translateToEnglish(encryptionService.decrypt(userPrompt));
+        JsonNode translateResponseJson = objectMapper.readTree(translateResponse);
+        String english_userPrompt = translateResponseJson.get("choices").get(0).get("message").get("content").asText();
+
+
+        System.out.println("english_userPrompt = " + english_userPrompt);
+
+        // moderation API를 이용해 유해성 검증한다.
+        Boolean isModerationBlocked = moderationService.moderateText(english_userPrompt).block();
+        String moderationResult = (isModerationBlocked != null) ? isModerationBlocked.toString() : "unknown";
+        System.out.println("moderationResult = " + moderationResult);     //moderation 결과 출력
+        if (Boolean.TRUE.equals(isModerationBlocked)) {
+            Message userMessage = Message.builder()
+                    .chat(chat)
+                    .mbti(Mbti.UNDEFINED)
+                    .sender(Sender.USER)
+                    .content(encryptionService.encrypt(userPrompt))
+                    .build();
+
+            Message gptMessage = Message.builder()
+                    .chat(chat)
+                    .sender(Sender.GPT)
+                    .content(encryptionService.encrypt("유해한 내용이 감지되었습니다."))
+                    .build();
+
+            return new AddChatResDTO(userMessage, gptMessage);
+        }
+
 
         String historyChat = getHistoryMessages(chatId);
 
