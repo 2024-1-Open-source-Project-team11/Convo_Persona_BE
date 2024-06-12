@@ -29,6 +29,7 @@ public class ChatController {
      */
     @GetMapping("/chat")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
+//    @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<GetChatLogDTO> getChatLog(@RequestHeader("Authorization") Long memberId) {
 //        System.out.println("--------------------------");
 //        System.out.println("memberId = " + memberId);
@@ -49,6 +50,7 @@ public class ChatController {
      */
     @PostMapping("/chat")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
+//    @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<?> postUserPrompt(@RequestHeader("Authorization") Long memberId, @RequestBody AddChatReqDTO addChatReqDTO) throws Exception {
 
         // 복호화해서 사용
@@ -77,6 +79,7 @@ public class ChatController {
      */
     @DeleteMapping("/chat")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
+//    @CrossOrigin(origins = "http://localhost:5173")
     public void deleteChatLog(@RequestHeader("Authorization") Long memberId) {
         chatService.backupAndDeleteChat(memberId);
     }

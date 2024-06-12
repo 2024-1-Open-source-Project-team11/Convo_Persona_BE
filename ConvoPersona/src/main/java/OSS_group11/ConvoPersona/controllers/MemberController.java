@@ -23,6 +23,7 @@ public class MemberController {
 
     @PostMapping("/user/sign-up")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
+//    @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<SignUpResDTO> signUp(@RequestBody SignUpReqDTO signUpReqDTO) {
         SignUpResDTO signUpResDTO = memberService.join(signUpReqDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(signUpResDTO);
@@ -34,6 +35,7 @@ public class MemberController {
      */
     @PostMapping("/user/sign-in")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
+//    @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<?> signIn(@RequestBody SignInReqDTO signInReqDTO) {
         Long memberId = memberService.login(signInReqDTO.getName(), signInReqDTO.getPassword());
 

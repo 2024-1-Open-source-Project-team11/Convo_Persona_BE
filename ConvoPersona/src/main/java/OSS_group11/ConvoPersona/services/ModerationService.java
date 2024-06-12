@@ -25,14 +25,6 @@ public class ModerationService {
                 .build();
     }
 
-    private final Map<String, Double> categoryThresholds = Map.of(
-            "violence", 0.05,
-            "hate", 0.001,
-            "self-harm", 0.04,
-            "self-harm/intent", 0.05,
-            "self-harm/instructions", 0.05,
-            "harassment", 0.05
-    );
 
     public Mono<Boolean> moderateText(String userPrompt) {
         return webClient.post()
@@ -49,10 +41,7 @@ public class ModerationService {
                     boolean flagged = (boolean) firstResult.get("flagged");
                     Map<String, Double> textScores = (Map<String, Double>) firstResult.get("category_scores");
 
-                    if (!flagged) {
-                        return isHarmful(textScores);
-                    }
-                    return true;
+                    return flagged;
                 })
                 .onErrorResume(WebClientResponseException.class, ex -> {
                     // 예외 처리 로직
@@ -60,13 +49,5 @@ public class ModerationService {
                     return Mono.just(false);
                 });
     }
-
-    private boolean isHarmful(Map<String, Double> textScores) {
-        for (Map.Entry<String, Double> entry : categoryThresholds.entrySet()) {
-            if (textScores.get(entry.getKey()) >= entry.getValue()) {
-                return true;
-            }
-        }
-        return false;
-    }
+    
 }
