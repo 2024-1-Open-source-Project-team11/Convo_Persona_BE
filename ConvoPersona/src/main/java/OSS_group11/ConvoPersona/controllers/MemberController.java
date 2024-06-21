@@ -2,6 +2,8 @@ package OSS_group11.ConvoPersona.controllers;
 
 import OSS_group11.ConvoPersona.dtos.SignInReqDTO;
 import OSS_group11.ConvoPersona.dtos.SignInResDTO;
+import OSS_group11.ConvoPersona.dtos.SignUpReqDTO;
+import OSS_group11.ConvoPersona.dtos.SignUpResDTO;
 import OSS_group11.ConvoPersona.services.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,12 +21,21 @@ public class MemberController {
         this.memberService = memberService;
     }
 
+    @PostMapping("/user/sign-up")
+    @CrossOrigin(origins = "https://convo-persona.netlify.app")
+//    @CrossOrigin(origins = "http://localhost:5173")
+    public ResponseEntity<SignUpResDTO> signUp(@RequestBody SignUpReqDTO signUpReqDTO) {
+        SignUpResDTO signUpResDTO = memberService.join(signUpReqDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(signUpResDTO);
+    }
+
     /***
      * Member테이블 조회, (name, password) 존재하면 해당 userId 반환
      * @return
      */
     @PostMapping("/user/sign-in")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
+//    @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<?> signIn(@RequestBody SignInReqDTO signInReqDTO) {
         Long memberId = memberService.login(signInReqDTO.getName(), signInReqDTO.getPassword());
 

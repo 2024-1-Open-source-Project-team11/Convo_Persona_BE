@@ -4,7 +4,6 @@ import OSS_group11.ConvoPersona.dtos.AddChatReqDTO;
 import OSS_group11.ConvoPersona.dtos.AddChatResDTO;
 import OSS_group11.ConvoPersona.dtos.GetChatLogDTO;
 import OSS_group11.ConvoPersona.services.ChatService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +29,7 @@ public class ChatController {
      */
     @GetMapping("/chat")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
+//    @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<GetChatLogDTO> getChatLog(@RequestHeader("Authorization") Long memberId) {
 //        System.out.println("--------------------------");
 //        System.out.println("memberId = " + memberId);
@@ -50,25 +50,19 @@ public class ChatController {
      */
     @PostMapping("/chat")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
-    public ResponseEntity<?> postUserPrompt(@RequestHeader("Authorization") Long memberId, @RequestBody AddChatReqDTO addChatReqDTO) throws JsonProcessingException {
-//        System.out.println("memberId = " + memberId);
-//        System.out.println("userPrompt = " + addChatReqDTO.getContent());
+//    @CrossOrigin(origins = "http://localhost:5173")
+    public ResponseEntity<?> postUserPrompt(@RequestHeader("Authorization") Long memberId, @RequestBody AddChatReqDTO addChatReqDTO) throws Exception {
 
-
-        // 사용자가 입력한 userPrompt (=addChatReqDTO.getContent()) 이용
-        // Message Entity DB에 저장하기
-        //memberId -> chatId -> message 순서대로 저장 (과연 순서대로 저장이 될까?)
+        // 복호화해서 사용
 
         // Demo 이후에는 POST "/chat/{chatId}"으로 수정해야함
         // -> 일단 chatId는 0으로 지정해줄 것(Member당 Chat이 1개인 상황이기 때문)
         // chatId를 가지는 Chat이 있는지 확인한다. 없으면 Exception 발생시키기.
         Long chatId = chatService.getChatId(memberId);
-//        Long chatId = 1L;
 
-        //Message userMessage = new Message(1L, Sender.USER, addChatReqDTO.getContent());
+
         // chatService -> 사용자가 보낸 userPrompt 기반, GPT 답변 받아오기
-        // response -> {userMessage, gptMessage}, AddChatResDTO로 수정
-
+        // addChatReqDTO.getContent() : 프론트 쪽에서 사용자 대화내용을 암호화를 해서 전송한다
         AddChatResDTO addChatResDTO = chatService.getGptMessage(chatId, addChatReqDTO.getContent());
 
         if (addChatResDTO == null) {
@@ -85,6 +79,7 @@ public class ChatController {
      */
     @DeleteMapping("/chat")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
+//    @CrossOrigin(origins = "http://localhost:5173")
     public void deleteChatLog(@RequestHeader("Authorization") Long memberId) {
         chatService.backupAndDeleteChat(memberId);
     }
