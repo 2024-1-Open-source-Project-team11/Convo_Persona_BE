@@ -28,7 +28,7 @@ public class Chat extends BaseTimeEntity {
     @JsonManagedReference
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Message> messages;
-
+    
     @Builder
     public Chat(Long chatId, Member member, List<Message> messages) {
         this.chatId = chatId;

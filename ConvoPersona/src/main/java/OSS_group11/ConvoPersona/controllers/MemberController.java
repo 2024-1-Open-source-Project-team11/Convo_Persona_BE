@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1")
 public class MemberController {
 
-    private MemberService memberService;
+    private final MemberService memberService;
 
     @Autowired
     public MemberController(MemberService memberService) {
@@ -23,7 +23,6 @@ public class MemberController {
 
     @PostMapping("/user/sign-up")
     @CrossOrigin(origins = "https://convo-persona.netlify.app")
-//    @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<SignUpResDTO> signUp(@RequestBody SignUpReqDTO signUpReqDTO) {
         SignUpResDTO signUpResDTO = memberService.join(signUpReqDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(signUpResDTO);
