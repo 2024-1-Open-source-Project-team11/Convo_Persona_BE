@@ -4,12 +4,12 @@ package OSS_group11.ConvoPersona.services;
 import OSS_group11.ConvoPersona.domain.Member;
 import OSS_group11.ConvoPersona.dtos.SignUpReqDTO;
 import OSS_group11.ConvoPersona.dtos.SignUpResDTO;
+import OSS_group11.ConvoPersona.exceptions.UserException;
+import OSS_group11.ConvoPersona.handler.response.ResponseCode;
 import OSS_group11.ConvoPersona.repositories.MemberRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -43,11 +43,17 @@ public class MemberService {
      */
     public SignUpResDTO join(SignUpReqDTO signUpReqDTO) {
         //이미 회원가입 한 회원인지 확인
+        memberRepository.findByEmail(signUpReqDTO.getEmail()).orElseThrow(
+                () -> new UserException(ResponseCode.USER_ALREADY_EXIST)
+        );
+
+        /*
         Optional<Member> byEmail = memberRepository.findByEmail(signUpReqDTO.getEmail());
 
         if (byEmail.isPresent()) {
             return null;        //return null if member found by email is already exist
         }
+        */
 
         Member newMember = Member.builder()
                 .name(signUpReqDTO.getName())
